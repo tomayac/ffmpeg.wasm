@@ -1,18 +1,14 @@
-<!--
-  Copyright 2026 Google LLC
-  SPDX-License-Identifier: Apache-2.0
--->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ffmpeg.wasm × Cross-Origin Storage</title>
+    <title>ffmpeg.wasm — Hello World</title>
     <!-- Resolve bare specifiers used by packages/util/dist/esm/index.js -->
     <script type="importmap">
     {
       "imports": {
-        "cos-resource-fetcher": "https://cdn.jsdelivr.net/npm/cos-resource-fetcher@0.1.1/src/index.js",
+        "cos-resource-fetcher": "https://cdn.jsdelivr.net/npm/cos-resource-fetcher@0.1.2/src/index.js",
         "npm-sha256-hash-fetcher": "https://cdn.jsdelivr.net/npm/npm-sha256-hash-fetcher@1.2.1/index.js"
       }
     }
@@ -38,14 +34,14 @@
     </style>
   </head>
   <body>
-    <h1>ffmpeg.wasm × Cross-Origin Storage — Hello World</h1>
+    <h1>ffmpeg.wasm — Hello World</h1>
     <p id="status">Loading…</p>
     <div id="progress"></div>
     <pre id="log"></pre>
 
     <script type="module">
-      import { FFmpeg } from '/packages/ffmpeg/dist/esm/index.js';
-      import { toBlobURL } from '/packages/util/dist/esm/index.js';
+      import { FFmpeg } from '../../packages/ffmpeg/dist/esm/index.js';
+      import { toBlobURL } from '../../packages/util/dist/esm/index.js';
 
       const status   = document.getElementById('status');
       const log      = document.getElementById('log');
@@ -70,24 +66,12 @@
         };
       }
 
-      const COS_EXTENSION_URL =
-        'https://chromewebstore.google.com/detail/cross-origin-storage/denpnpcgjgikjpoglpjefakmdcbmlgih';
-
       const hasCOS = 'crossOriginStorage' in navigator;
-      addLog(`Cross-Origin Storage available: ${hasCOS}`);
-      if (!hasCOS) {
-        status.innerHTML =
-          '⚠️ Cross-Origin Storage not available — ' +
-          `<a class="warn" href="${COS_EXTENSION_URL}" target="_blank">install the COS extension</a>` +
-          ' to test COS loading';
-      }
-      addLog('');
 
       const BASE = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
 
       try {
-        addLog('Resolving SHA-256 hashes and loading ffmpeg-core via toBlobURL…');
-        addLog('(for jsDelivr URLs this uses COS when available, otherwise Cache API)');
+        addLog('Loading ffmpeg-core…');
         addLog('');
 
         const [coreURL, wasmURL] = await Promise.all([
@@ -95,8 +79,6 @@
           toBlobURL(`${BASE}/ffmpeg-core.wasm`, 'application/wasm', true, makeProgressRow('ffmpeg-core.wasm')),
         ]);
 
-        addLog(`coreURL → ${coreURL.slice(0, 55)}…`);
-        addLog(`wasmURL → ${wasmURL.slice(0, 55)}…`);
         addLog('');
         addLog('Calling ffmpeg.load()…');
 
@@ -108,11 +90,9 @@
         addLog('Running: ffmpeg -version');
         await ffmpeg.exec(['-version']);
 
-        if (hasCOS) {
-          status.innerHTML =
-            '<span class="ok">✓ ffmpeg works — check the COS extension to confirm ' +
-            'the resources were served from Cross-Origin Storage</span>';
-        }
+        status.innerHTML = hasCOS
+          ? '<span class="ok">✓ ffmpeg works — resources served from Cross-Origin Storage</span>'
+          : '<span class="ok">✓ ffmpeg works — resources cached in the Cache API</span>';
       } catch (err) {
         status.innerHTML = `<span class="err">✗ ${err.message}</span>`;
         addLog(`\nError:\n${err.stack}`);
