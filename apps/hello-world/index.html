@@ -66,7 +66,7 @@
         };
       }
 
-      const hasCOS = 'crossOriginStorage' in navigator;
+      const hasCOS = typeof navigator.crossOriginStorage?.getFileHandle === 'function';
 
       const BASE = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/esm';
 
